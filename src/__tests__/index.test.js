@@ -1,7 +1,7 @@
 const path = require('path');
 const mockFs = require('mock-fs');
 const { silent } = require('resolve-from');
-const { deduplicate } = require('./index');
+const { deduplicate } = require('../index');
 
 jest.mock('./deduplicate-transitive-deps');
 

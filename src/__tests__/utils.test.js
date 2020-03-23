@@ -1,7 +1,7 @@
 const fs = require('fs');
 const mockFs = require('mock-fs');
 
-const { getDuplicatedPackages, extractPackageName } = require('./utils');
+const { getDuplicatedPackages, extractPackageName } = require('../utils');
 
 const nodeModulesPrefix = 'node_modules/something/node_modules';
 
