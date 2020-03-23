@@ -27,7 +27,14 @@
     "build:js": "babel src --out-dir build --extensions \".ts,.tsx\" --ignore \"src/**/*test.ts,src/**/test.ts\" --source-maps inline",
     "lint": "eslint --ext .ts,.tsx,.js src/"
   },
-  "dependencies": {},
+  "dependencies": {
+    "browser-resolve": "^1.11.3",
+    "fast-glob": "^3.2.2",
+    "find-package-json": "^1.2.0",
+    "lodash": "^4.17.15",
+    "mkdirp": "^1.0.3",
+    "resolve-from": "^5.0.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
@@ -45,6 +52,7 @@
     "eslint-plugin-jest": "^23.8.2",
     "eslint-plugin-prettier": "^3.1.2",
     "jest": "^25.1.0",
+    "mock-fs": "^4.11.0",
     "prettier": "2.0.1",
     "typescript": "^3.8.3"
   }
