@@ -6,7 +6,7 @@
     "Webpack",
     "Webpack plugin"
   ],
-  "types": "./types/index.d.ts",
+  "types": "./build/index.d.ts",
   "main": "build/index.js",
   "repository": {
     "type": "git",
