@@ -1,19 +1,24 @@
 # Webpack Deduplication Plugin
 
-[![Atlassian license](https://img.shields.io/badge/license-Apache%202.0-blue.svg?style=flat-square)](LICENSE) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
-
-What's there
-
-> [![npm version](https://img.shields.io/npm/v/react-beautiful-dnd.svg?style=flat-square)](https://www.npmjs.com/package/react-beautiful-dnd) [![npm version](https://img.shields.io/npm/v/@atlaskit/button.svg?style=flat-square)](https://www.npmjs.com/package/@atlaskit/button) [![Build Status](https://img.shields.io/travis/stricter/stricter/master?style=flat-square)](https://travis-ci.org/stricter/stricter)
-
+Plugin for webpack that de-duplicates transitive dependencies in yarn and webpack-based projects.
 
 ## Usage
 
-How to use it
+Import it from the package
+
+```
+const { WebpackDeduplicationPlugin } = require('webpack-deduplication-plugin');
+```
+And add it to your webpack config:
+```
+plugins: [
+    new WebpackDeduplicationPlugin(),
+]
+```
 
 ## Development
 
-How to install it
+TBD
 
 ## Contributions
 
