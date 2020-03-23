@@ -26,7 +26,7 @@ Contributions to Webpack Deduplication Plugin are welcome! Please see [CONTRIBUT
 
 ## License
 
-Copyright (c) [YYYY] - [YYYY] Atlassian and others.
+Copyright (c) 2020 Atlassian and others.
 Apache 2.0 licensed, see [LICENSE](LICENSE) file.
 
 
