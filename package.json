@@ -24,7 +24,8 @@
     "type-check:watch": "npm run type-check -- --watch",
     "build": "npm run build:types && npm run build:js",
     "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly",
-    "build:js": "babel src --out-dir build --extensions \".ts,.tsx\" --ignore \"src/**/*test.ts,src/**/test.ts\" --source-maps inline"
+    "build:js": "babel src --out-dir build --extensions \".ts,.tsx\" --ignore \"src/**/*test.ts,src/**/test.ts\" --source-maps inline",
+    "lint": "eslint --ext .ts,.tsx,.js src/"
   },
   "dependencies": {},
   "devDependencies": {
@@ -35,7 +36,16 @@
     "@babel/preset-typescript": "^7.9.0",
     "@types/jest": "^25.1.4",
     "@types/node": "^13.9.3",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-jest": "^23.8.2",
+    "eslint-plugin-prettier": "^3.1.2",
     "jest": "^25.1.0",
+    "prettier": "2.0.1",
     "typescript": "^3.8.3"
   }
 }
