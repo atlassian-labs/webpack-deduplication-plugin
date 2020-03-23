@@ -1,0 +1,23 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editors
+.idea
+.vscode
+*.iml
+.vs
+jsconfig.json
+*.swp
+
+# Dependency directories
+node_modules
+.yalc
+yalc.lock
+
+# Optional npm cache directory
+.npm
+
+# Build files
+build
