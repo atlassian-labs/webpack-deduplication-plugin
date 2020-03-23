@@ -3,7 +3,7 @@ const mockFs = require('mock-fs');
 const { silent } = require('resolve-from');
 const { deduplicate } = require('../index');
 
-jest.mock('./deduplicate-transitive-deps');
+jest.mock('../utils');
 
 const mockResource = ({ filename, context }) => {
     return {
