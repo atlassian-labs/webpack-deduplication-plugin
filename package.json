@@ -28,6 +28,11 @@
     "lint": "eslint --ext .ts,.tsx,.js src/"
   },
   "dependencies": {
+    "@types/browser-resolve": "^1.11.0",
+    "@types/find-package-json": "^1.1.1",
+    "@types/lodash": "^4.14.150",
+    "@types/mkdirp": "^1.0.0",
+    "@types/resolve-from": "^5.0.1",
     "browser-resolve": "^1.11.3",
     "fast-glob": "^3.2.2",
     "find-package-json": "^1.2.0",

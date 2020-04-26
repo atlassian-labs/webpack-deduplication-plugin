@@ -1,12 +1,12 @@
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-const glob = require('fast-glob');
-const flatten = require('lodash/flatten');
-const isEqual = require('lodash/isEqual');
-const pickBy = require('lodash/pickBy');
-const transform = require('lodash/transform');
-const mkdirp = require('mkdirp');
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import glob from 'fast-glob';
+import flatten from 'lodash/flatten';
+import isEqual from 'lodash/isEqual';
+import pickBy from 'lodash/pickBy';
+import transform from 'lodash/transform';
+import mkdirp from 'mkdirp';
 
 const patchesPath = 'patches';
 
@@ -127,8 +127,4 @@ const getDuplicatedPackages = (options = {}) => {
     return cleanFromFalsePositives;
 };
 
-module.exports = {
-    getDuplicatedPackages,
-    extractPackageName,
-    getListOfPackages,
-};
+export { getDuplicatedPackages, extractPackageName, getListOfPackages };

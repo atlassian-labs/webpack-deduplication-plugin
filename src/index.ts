@@ -1,9 +1,9 @@
-const browserResolve = require('browser-resolve');
-const packageJsonFinder = require('find-package-json');
-const memoize = require('lodash/memoize');
-const resolveFrom = require('resolve-from');
+import browserResolve from 'browser-resolve';
+import packageJsonFinder from 'find-package-json';
+import memoize from 'lodash/memoize';
+import resolveFrom from 'resolve-from';
 
-const { getDuplicatedPackages } = require('./utils');
+import { getDuplicatedPackages } from './utils';
 
 const resolved = memoize(
     (request, context) => {
@@ -119,7 +119,4 @@ class WebpackDeduplicationPlugin {
     }
 }
 
-module.exports = {
-    WebpackDeduplicationPlugin,
-    deduplicate,
-};
+export { WebpackDeduplicationPlugin, deduplicate };
