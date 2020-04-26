@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const appRoot = require('app-root-path');
 const glob = require('fast-glob');
 const flatten = require('lodash/flatten');
 const isEqual = require('lodash/isEqual');
@@ -57,8 +58,8 @@ const extractProperDuplicates = (duplicates) => {
     });
 };
 
-const getCacheKey = (patchedPackages) => {
-    const yarnLock = fs.readFileSync('yarn.lock');
+const getCacheKey = ({ patchedPackages, rootPath }) => {
+    const yarnLock = fs.readFileSync(path.resolve(rootPath, 'yarn.lock'));
     const hash = crypto.createHash('md5');
     hash.update(yarnLock);
     hash.update(patchedPackages.join(','));
@@ -72,18 +73,22 @@ const filterOnlyDuplicates = (pkg) =>
 const CACHE_BUST = 1;
 
 const getDuplicatedPackages = (options = {}) => {
+    const rootPath = options.rootPath || appRoot.toString();
     const patchedPackages = getPatchedPackages(options.patchesPath || patchesPath);
     let cacheFileName;
     if (options.cacheDir) {
         mkdirp.sync(options.cacheDir);
-        const cacheKey = getCacheKey(patchedPackages);
-        cacheFileName = path.join(options.cacheDir, `duplicates-${cacheKey}.${CACHE_BUST}.json`);
+        const cacheKey = getCacheKey({ rootPath, patchedPackages });
+        cacheFileName = path.resolve(options.cacheDir, `duplicates-${cacheKey}.${CACHE_BUST}.json`);
         if (fs.existsSync(cacheFileName)) {
             return JSON.parse(fs.readFileSync(cacheFileName, 'utf8'));
         }
     }
 
-    const packages = glob.sync('node_modules/**/package.json').sort().filter(filterOnlyDuplicates);
+    const packages = glob
+        .sync(`${rootPath}/node_modules/**/package.json`)
+        .sort()
+        .filter(filterOnlyDuplicates);
 
     const packageJsonsByKeyFull = {};
 

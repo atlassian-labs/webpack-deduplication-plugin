@@ -1,9 +1,10 @@
 const fs = require('fs');
+const path = require('path');
 const mockFs = require('mock-fs');
 
 const { getDuplicatedPackages, extractPackageName } = require('../utils');
 
-const nodeModulesPrefix = 'node_modules/something/node_modules';
+const nodeModulesPrefix = path.resolve('node_modules/something/node_modules');
 
 const nodeModulesMock = {
     'yarn.lock': 'this has stuff in it',
