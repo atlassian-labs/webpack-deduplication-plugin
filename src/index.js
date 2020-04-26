@@ -12,9 +12,7 @@ const resolved = memoize(
                 basedir: context,
                 browser: 'module',
             });
-            return browserResolve.sync(browserResolvedModule, {
-                filename: browserResolvedModule,
-            });
+            return browserResolve.sync(browserResolvedModule, { filename: browserResolvedModule });
         } catch (e) {
             return resolveFrom.silent(context, request);
         }
@@ -62,12 +60,6 @@ const deduplicate = (result, dupVals) => {
 
         const replaceWithFirst = onePackageDuplicates[0];
         const resolvedDup = resolvedResource.replace(found, replaceWithFirst);
-        const indexFirstNodeModule = resolvedDup.indexOf('node_modules');
-        const replacedModuleIndex = resolvedDup.indexOf(replaceWithFirst);
-
-        if (indexFirstNodeModule !== replacedModuleIndex) {
-            return false;
-        }
 
         const lastIndex = resolvedDup.indexOf(
             'node_modules',
@@ -99,14 +91,16 @@ const deduplicate = (result, dupVals) => {
 };
 
 class WebpackDeduplicationPlugin {
-    constructor({ cacheDir }) {
+    constructor({ cacheDir, rootPath }) {
         this.cacheDir = cacheDir;
+        this.rootPath = rootPath;
     }
 
     apply(compiler) {
-        const { cacheDir } = this;
+        const { cacheDir, rootPath } = this;
         const duplicates = getDuplicatedPackages({
             cacheDir,
+            rootPath,
         });
 
         const dupVals = Object.values(duplicates);
