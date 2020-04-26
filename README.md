@@ -9,12 +9,26 @@ Import it from the package
 ```
 const { WebpackDeduplicationPlugin } = require('webpack-deduplication-plugin');
 ```
+
 And add it to your webpack config:
+
 ```
 plugins: [
-    new WebpackDeduplicationPlugin(),
+    new WebpackDeduplicationPlugin({
+        cacheDir: cacheDirPath,
+        rootDir: rootDirPath,
+    }),
 ]
 ```
+
+where:
+
+-   cacheDirPath - absolute path to the directory where the cache of the duplicates will be stored.
+    Cache is based on the content of `yarn.lock` file and will be updated with every change.
+    If not provided then the duplicates will be re-generated with every run.
+
+*   rootDir - absolute path to the root of the project. If not provided it will be auto-detected
+    by [`app-root-path`](https://www.npmjs.com/package/app-root-path) plugin
 
 ## Development
 
@@ -22,7 +36,7 @@ TBD
 
 ## Contributions
 
-Contributions to Webpack Deduplication Plugin are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details. 
+Contributions to Webpack Deduplication Plugin are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 
