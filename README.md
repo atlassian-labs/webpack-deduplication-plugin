@@ -16,7 +16,7 @@ And add it to your webpack config:
 plugins: [
     new WebpackDeduplicationPlugin({
         cacheDir: cacheDirPath,
-        rootDir: rootDirPath,
+        rootPath: rootPath,
     }),
 ]
 ```
@@ -27,7 +27,7 @@ where:
     Cache is based on the content of `yarn.lock` file and will be updated with every change.
     If not provided then the duplicates will be re-generated with every run.
 
-*   rootDir - absolute path to the root of the project. If not provided it will be auto-detected
+*   rootPath - absolute path to the root of the project. If not provided it will be auto-detected
     by [`app-root-path`](https://www.npmjs.com/package/app-root-path) plugin
 
 ## Development
