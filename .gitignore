@@ -6,6 +6,7 @@ npm-debug.log*
 # Editors
 .idea
 .vscode
+.history
 *.iml
 .vs
 jsconfig.json

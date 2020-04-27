@@ -27,6 +27,11 @@
     "build:js": "babel src --out-dir build --extensions \".ts,.tsx,.js\" --ignore src/__tests__ --source-maps inline",
     "lint": "eslint --ext .ts,.tsx,.js src/"
   },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/src/__tests__/**/*.test.js"
+  ]
+  },
   "dependencies": {
     "app-root-path": "^3.0.0",
     "browser-resolve": "^1.11.3",

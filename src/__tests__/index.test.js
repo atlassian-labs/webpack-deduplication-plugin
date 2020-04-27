@@ -42,14 +42,22 @@ describe('duplicate-transitive-replacement', () => {
             ],
         ];
 
-        const matchingResource = mockResource({
+        const matchingBarResource = mockResource({
             filename: './something',
             context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
         });
+        const matchingZooResource = mockResource({
+            filename: './something',
+            context: path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo'),
+        });
 
-        silent.mockImplementation(() =>
-            path.resolve(matchingResource.context, matchingResource.request)
-        );
+        silent.mockImplementation((context) => {
+            if (context === matchingBarResource.context) {
+                return path.resolve(matchingBarResource.context, matchingBarResource.request);
+            } else if (context === matchingZooResource.context) {
+                return path.resolve(matchingZooResource.context, matchingZooResource.request);
+            }
+        });
 
         const finder = require('find-package-json');
 
@@ -57,14 +65,18 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const res = deduplicate(matchingResource, duplicates);
+        const barRes = deduplicate(matchingBarResource, duplicates);
+        const zooRes = deduplicate(matchingZooResource, duplicates);
 
-        expect(res).toEqual(
+        // Don't replace bar
+        expect(barRes).toEqual(undefined);
+        // Replace zoo with bar
+        expect(zooRes).toEqual(
             mockResource({
                 filename: path.resolve(
-                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo/something'
+                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo/something'
                 ),
-                context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
+                context: path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo'),
             })
         );
     });
