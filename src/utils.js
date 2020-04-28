@@ -132,7 +132,26 @@ const getDuplicatedPackages = (options = {}) => {
     return cleanFromFalsePositives;
 };
 
+const getDedupLock = (root) => {
+    const lockFilePath = path.join(root, 'webpack-dedup.lock');
+    if (!fs.existsSync(lockFilePath)) {
+        return {};
+    }
+    return JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
+};
+
+const writeDedupLock = (root, lock) => {
+    const lockFilePath = path.join(root, 'webpack-dedup.lock');
+    const relativeLock = Object.entries(lock).reduce((lock, [key, value]) => {
+        lock[key] = value.replace(root, '');
+        return lock;
+    }, {});
+    fs.writeFileSync(lockFilePath, JSON.stringify(relativeLock, null, 2), 'utf8');
+};
+
 module.exports = {
+    getDedupLock,
+    writeDedupLock,
     getDuplicatedPackages,
     extractPackageName,
     getListOfPackages,

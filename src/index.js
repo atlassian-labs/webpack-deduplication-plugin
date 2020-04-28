@@ -3,10 +3,7 @@ const packageJsonFinder = require('find-package-json');
 const memoize = require('lodash/memoize');
 const resolveFrom = require('resolve-from');
 
-const { getDuplicatedPackages } = require('./utils');
-
-// eslint-disable-next-line no-undef
-const prefixGroupAssignmentMap = new Map();
+const { getDedupLock, writeDedupLock, getDuplicatedPackages } = require('./utils');
 
 const resolved = memoize(
     (request, context) => {
@@ -27,15 +24,20 @@ const containsNodeModules = (resolvedResource) => {
     return resolvedResource.includes('node_modules');
 };
 
-const findBestMatch = (prefixGroup, fullPath) => {
+const findBestMatch = (key, prefixGroup, previousLock, currentLock, resolvedResource) => {
     for (const prefix of prefixGroup) {
-        if (fullPath.includes(prefix)) {
+        if (resolvedResource.includes(prefix)) {
+            // If we have a lock file. Always use the entry saved previously to achieve the long term caching.
+            if (key in previousLock) {
+                currentLock[key] = prefixGroup.find((prefix) => prefix.includes(previousLock[key]));
+            }
+
             // Don't replace on the first encounter but assign the found prefix to the group.
             // Next time if we found a prefix match we use the assigned result from previous iterations.
-            if (prefixGroupAssignmentMap.has(prefixGroup)) {
-                return [prefix, prefixGroupAssignmentMap.get(prefixGroup)];
+            if (key in currentLock) {
+                return [prefix, currentLock[key]];
             } else {
-                prefixGroupAssignmentMap.set(prefixGroup, prefix);
+                currentLock[key] = prefix;
                 return null;
             }
         }
@@ -43,7 +45,7 @@ const findBestMatch = (prefixGroup, fullPath) => {
     return null;
 };
 
-const deduplicate = (result, prefixGroups) => {
+const deduplicate = (result, prefixGroups, previousLock, currentLock) => {
     if (!result) return undefined;
 
     // dont touch loaders
@@ -62,14 +64,18 @@ const deduplicate = (result, prefixGroups) => {
     }
 
     // we will change result as a side-effect
-    const wasChanged = prefixGroups.some((prefixGroup) => {
-        const found = findBestMatch(prefixGroup, resolvedResource);
+    const wasChanged = prefixGroups.some(([key, prefixGroup]) => {
+        const found = findBestMatch(key, prefixGroup, previousLock, currentLock, resolvedResource);
 
         if (!found) {
             return false;
         }
 
         const [search, replacement] = found;
+        if (search === replacement) {
+            return false;
+        }
+
         const resolvedDup = resolvedResource.replace(search, replacement);
 
         const lastIndex = resolvedDup.indexOf(
@@ -101,6 +107,8 @@ const deduplicate = (result, prefixGroups) => {
     return undefined;
 };
 
+const PLUGIN_NAME = 'WebpackDeduplicationPlugin';
+
 class WebpackDeduplicationPlugin {
     constructor({ cacheDir, rootPath }) {
         this.cacheDir = cacheDir;
@@ -114,12 +122,18 @@ class WebpackDeduplicationPlugin {
             rootPath,
         });
 
-        const prefixGroups = Object.values(duplicates);
+        const prefixGroups = Object.entries(duplicates);
+        const previousLock = getDedupLock(this.rootPath);
+        const currentLock = {};
 
-        compiler.hooks.normalModuleFactory.tap('WebpackDeduplicationPlugin', (nmf) => {
-            nmf.hooks.beforeResolve.tap('WebpackDeduplicationPlugin', (result) => {
-                return deduplicate(result, prefixGroups);
+        compiler.hooks.normalModuleFactory.tap(PLUGIN_NAME, (nmf) => {
+            nmf.hooks.beforeResolve.tap(PLUGIN_NAME, (result) => {
+                return deduplicate(result, prefixGroups, previousLock, currentLock);
             });
+        });
+
+        compiler.hooks.afterCompile.tap(PLUGIN_NAME, () => {
+            writeDedupLock(this.rootPath, currentLock);
         });
     }
 }

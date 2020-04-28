@@ -37,8 +37,11 @@ describe('duplicate-transitive-replacement', () => {
         });
         const duplicates = [
             [
-                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                '@atlaskit/foo',
+                [
+                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                ],
             ],
         ];
 
@@ -65,8 +68,10 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const barRes = deduplicate(matchingBarResource, duplicates);
-        const zooRes = deduplicate(matchingZooResource, duplicates);
+        const previousLock = {};
+        const currentLock = {};
+        const barRes = deduplicate(matchingBarResource, duplicates, previousLock, currentLock);
+        const zooRes = deduplicate(matchingZooResource, duplicates, previousLock, currentLock);
 
         // Don't replace bar
         expect(barRes).toEqual(undefined);
@@ -79,6 +84,78 @@ describe('duplicate-transitive-replacement', () => {
                 context: path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo'),
             })
         );
+        // Generated a lock
+        expect(currentLock).toEqual({
+            '@atlaskit/foo': 'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+        });
+    });
+
+    it('duplicate transitive dependencies replacement - use lock file', () => {
+        mockFs({
+            [path.resolve(
+                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                './something'
+            )]: 'stuff',
+            [path.resolve(
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                './something'
+            )]: 'stuff',
+        });
+        const duplicates = [
+            [
+                '@atlaskit/foo',
+                [
+                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                ],
+            ],
+        ];
+
+        const matchingBarResource = mockResource({
+            filename: './something',
+            context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
+        });
+        const matchingZooResource = mockResource({
+            filename: './something',
+            context: path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo'),
+        });
+
+        silent.mockImplementation((context) => {
+            if (context === matchingBarResource.context) {
+                return path.resolve(matchingBarResource.context, matchingBarResource.request);
+            } else if (context === matchingZooResource.context) {
+                return path.resolve(matchingZooResource.context, matchingZooResource.request);
+            }
+        });
+
+        const finder = require('find-package-json');
+
+        finder.mockImplementation(() => ({
+            next: () => ({ value: { name: '@atlaskit/foo' } }),
+        }));
+
+        const previousLock = {
+            '@atlaskit/foo': 'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+        };
+        const currentLock = {};
+        const barRes = deduplicate(matchingBarResource, duplicates, previousLock, currentLock);
+        const zooRes = deduplicate(matchingZooResource, duplicates, previousLock, currentLock);
+
+        // Replaced bar with zoo because the lock says foo should map to zoo/foo
+        expect(barRes).toEqual(
+            mockResource({
+                filename: path.resolve(
+                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo/something'
+                ),
+                context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
+            })
+        );
+        // Should not touch zoo
+        expect(zooRes).toEqual(undefined);
+        // Generated a lock
+        expect(currentLock).toEqual({
+            '@atlaskit/foo': 'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+        });
     });
 
     it('duplicate transitive dependencies replacement - non-matching duplicates should return undefined', () => {
@@ -98,8 +175,11 @@ describe('duplicate-transitive-replacement', () => {
         });
         const duplicates = [
             [
-                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                '@atlaskit/foo',
+                [
+                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                ],
             ],
         ];
 
@@ -118,7 +198,9 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const res = deduplicate(nonMatchingResource, duplicates);
+        const previousLock = {};
+        const currentLock = {};
+        const res = deduplicate(nonMatchingResource, duplicates, previousLock, currentLock);
 
         expect(res).toEqual(undefined);
     });

@@ -30,6 +30,11 @@ where:
 *   rootPath - absolute path to the root of the project. If not provided it will be auto-detected
     by [`app-root-path`](https://www.npmjs.com/package/app-root-path) plugin
 
+`webpack-dedup.lock` file:
+
+Plugin will generate a `webpack-dedup.lock` file at the configured `rootPath`. This file is used for generating deterministic builds in order to achieve the long-term caching.
+Please check this file into the source control.
+
 ## Development
 
 TBD
