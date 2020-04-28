@@ -34,8 +34,8 @@ where:
 
 Lock file:
 
-Plugin will generate a lock file at `lockFilePath`. This file is used for generating deterministic builds in order to achieve the long-term caching.
-Please check this file into the source control.
+Plugin will generate a lock file at `lockFilePath`. Please check this file into the source control.
+This file allows webpack-deduplication-plugin to produce consistent results across different machines.
 
 ## Development
 
