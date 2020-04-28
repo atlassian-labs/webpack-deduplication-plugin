@@ -136,7 +136,11 @@ const getDedupLock = (lockFilePath) => {
     if (!fs.existsSync(lockFilePath)) {
         return {};
     }
-    return JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
+    try {
+        return JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
+    } catch (e) {
+        return {};
+    }
 };
 
 const writeDedupLock = (lockFilePath, root, lock) => {
