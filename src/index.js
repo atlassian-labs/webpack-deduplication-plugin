@@ -132,7 +132,7 @@ class WebpackDeduplicationPlugin {
             });
         });
 
-        compiler.hooks.afterCompile.tap(PLUGIN_NAME, () => {
+        compiler.hooks.emit.tap(PLUGIN_NAME, () => {
             writeDedupLock(this.rootPath, currentLock);
         });
     }
