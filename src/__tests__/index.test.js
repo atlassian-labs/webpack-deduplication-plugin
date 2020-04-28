@@ -35,16 +35,12 @@ describe('duplicate-transitive-replacement', () => {
                 './something'
             )]: 'stuff',
         });
-        const duplicates = [
-            [
-                '@atlaskit/foo',
-                [
-                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
-                ],
+        const duplicates = {
+            '@atlaskit/foo': [
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
             ],
-        ];
-
+        };
         const matchingBarResource = mockResource({
             filename: './something',
             context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
@@ -68,9 +64,9 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const deDuplicator = new DeDuplicator({ existingLock: {} });
-        const barRes = deDuplicator.deduplicate(matchingBarResource, duplicates);
-        const zooRes = deDuplicator.deduplicate(matchingZooResource, duplicates);
+        const deDuplicator = new DeDuplicator({ duplicates, existingLock: {} });
+        const barRes = deDuplicator.deduplicate(matchingBarResource);
+        const zooRes = deDuplicator.deduplicate(matchingZooResource);
 
         // Don't replace bar
         expect(barRes).toEqual(undefined);
@@ -100,16 +96,12 @@ describe('duplicate-transitive-replacement', () => {
                 './something'
             )]: 'stuff',
         });
-        const duplicates = [
-            [
-                '@atlaskit/foo',
-                [
-                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
-                ],
+        const duplicates = {
+            '@atlaskit/foo': [
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
             ],
-        ];
-
+        };
         const matchingBarResource = mockResource({
             filename: './something',
             context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
@@ -134,12 +126,13 @@ describe('duplicate-transitive-replacement', () => {
         }));
 
         const deDuplicator = new DeDuplicator({
+            duplicates,
             existingLock: {
                 '@atlaskit/foo': 'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
             },
         });
-        const barRes = deDuplicator.deduplicate(matchingBarResource, duplicates);
-        const zooRes = deDuplicator.deduplicate(matchingZooResource, duplicates);
+        const barRes = deDuplicator.deduplicate(matchingBarResource);
+        const zooRes = deDuplicator.deduplicate(matchingZooResource);
 
         // Replaced bar with zoo because the lock says foo should map to zoo/foo
         expect(barRes).toEqual(
@@ -173,15 +166,12 @@ describe('duplicate-transitive-replacement', () => {
                 './something'
             )]: 'stuff',
         });
-        const duplicates = [
-            [
-                '@atlaskit/foo',
-                [
-                    'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-                    'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
-                ],
+        const duplicates = {
+            '@atlaskit/foo': [
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
             ],
-        ];
+        };
 
         const nonMatchingResource = mockResource({
             filename: './something',
@@ -198,8 +188,8 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const deDuplicator = new DeDuplicator({ existingLock: {} });
-        const res = deDuplicator.deduplicate(nonMatchingResource, duplicates);
+        const deDuplicator = new DeDuplicator({ duplicates, existingLock: {} });
+        const res = deDuplicator.deduplicate(nonMatchingResource);
 
         expect(res).toEqual(undefined);
     });

@@ -26,7 +26,8 @@ const containsNodeModules = (resolvedResource) => {
 };
 
 class DeDuplicator {
-    constructor({ existingLock }) {
+    constructor({ duplicates, existingLock }) {
+        this.duplicateEntries = Object.entries(duplicates);
         this.existingLock = existingLock;
         this.newLock = {};
     }
@@ -56,7 +57,7 @@ class DeDuplicator {
         return this.newLock;
     }
 
-    deduplicate(result, duplicateEntries) {
+    deduplicate(result) {
         if (!result) return undefined;
 
         // dont touch loaders
@@ -75,7 +76,7 @@ class DeDuplicator {
         }
 
         // we will change result as a side-effect
-        const wasChanged = duplicateEntries.some(([key, duplicates]) => {
+        const wasChanged = this.duplicateEntries.some(([key, duplicates]) => {
             const found = this._findBestMatch(key, duplicates, resolvedResource);
 
             if (!found) {
@@ -135,12 +136,14 @@ class WebpackDeduplicationPlugin {
             rootPath,
         });
 
-        const duplicateEntries = Object.entries(duplicates);
-        const deDuplicator = new DeDuplicator({ existingLock: getDedupLock(this.lockFilePath) });
+        const deDuplicator = new DeDuplicator({
+            duplicates,
+            existingLock: getDedupLock(this.lockFilePath),
+        });
 
         compiler.hooks.normalModuleFactory.tap(PLUGIN_NAME, (nmf) => {
             nmf.hooks.beforeResolve.tap(PLUGIN_NAME, (result) => {
-                return deDuplicator.deduplicate(result, duplicateEntries);
+                return deDuplicator.deduplicate(result);
             });
         });
 
