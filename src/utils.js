@@ -142,10 +142,12 @@ const getDedupLock = (root) => {
 
 const writeDedupLock = (root, lock) => {
     const lockFilePath = path.join(root, 'webpack-dedup.lock');
-    const relativeLock = Object.entries(lock).reduce((lock, [key, value]) => {
-        lock[key] = value.replace(root, '');
-        return lock;
-    }, {});
+    const relativeLock = Object.entries(lock)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .reduce((lock, [key, value]) => {
+            lock[key] = value.replace(root, '');
+            return lock;
+        }, {});
     fs.writeFileSync(lockFilePath, JSON.stringify(relativeLock, null, 2), 'utf8');
 };
 
