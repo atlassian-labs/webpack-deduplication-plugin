@@ -1,7 +1,7 @@
 const path = require('path');
 const mockFs = require('mock-fs');
 const { silent } = require('resolve-from');
-const { deduplicate } = require('../index');
+const { DeDuplicator } = require('../index');
 
 jest.mock('../utils');
 
@@ -68,10 +68,9 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const previousLock = {};
-        const currentLock = {};
-        const barRes = deduplicate(matchingBarResource, duplicates, previousLock, currentLock);
-        const zooRes = deduplicate(matchingZooResource, duplicates, previousLock, currentLock);
+        const deDuplicator = new DeDuplicator({ existingLock: {} });
+        const barRes = deDuplicator.deduplicate(matchingBarResource, duplicates);
+        const zooRes = deDuplicator.deduplicate(matchingZooResource, duplicates);
 
         // Don't replace bar
         expect(barRes).toEqual(undefined);
@@ -85,7 +84,7 @@ describe('duplicate-transitive-replacement', () => {
             })
         );
         // Generated a lock
-        expect(currentLock).toEqual({
+        expect(deDuplicator.getLock()).toEqual({
             '@atlaskit/foo': 'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
         });
     });
@@ -134,12 +133,13 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const previousLock = {
-            '@atlaskit/foo': 'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-        };
-        const currentLock = {};
-        const barRes = deduplicate(matchingBarResource, duplicates, previousLock, currentLock);
-        const zooRes = deduplicate(matchingZooResource, duplicates, previousLock, currentLock);
+        const deDuplicator = new DeDuplicator({
+            existingLock: {
+                '@atlaskit/foo': 'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
+            },
+        });
+        const barRes = deDuplicator.deduplicate(matchingBarResource, duplicates);
+        const zooRes = deDuplicator.deduplicate(matchingZooResource, duplicates);
 
         // Replaced bar with zoo because the lock says foo should map to zoo/foo
         expect(barRes).toEqual(
@@ -153,7 +153,7 @@ describe('duplicate-transitive-replacement', () => {
         // Should not touch zoo
         expect(zooRes).toEqual(undefined);
         // Generated a lock
-        expect(currentLock).toEqual({
+        expect(deDuplicator.getLock()).toEqual({
             '@atlaskit/foo': 'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
         });
     });
@@ -198,9 +198,8 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const previousLock = {};
-        const currentLock = {};
-        const res = deduplicate(nonMatchingResource, duplicates, previousLock, currentLock);
+        const deDuplicator = new DeDuplicator({ existingLock: {} });
+        const res = deDuplicator.deduplicate(nonMatchingResource, duplicates);
 
         expect(res).toEqual(undefined);
     });

@@ -132,16 +132,14 @@ const getDuplicatedPackages = (options = {}) => {
     return cleanFromFalsePositives;
 };
 
-const getDedupLock = (root) => {
-    const lockFilePath = path.join(root, 'webpack-dedup.lock');
+const getDedupLock = (lockFilePath) => {
     if (!fs.existsSync(lockFilePath)) {
         return {};
     }
     return JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
 };
 
-const writeDedupLock = (root, lock) => {
-    const lockFilePath = path.join(root, 'webpack-dedup.lock');
+const writeDedupLock = (lockFilePath, root, lock) => {
     const relativeLock = Object.entries(lock)
         .sort((a, b) => a[0].localeCompare(b[0]))
         .reduce((lock, [key, value]) => {
