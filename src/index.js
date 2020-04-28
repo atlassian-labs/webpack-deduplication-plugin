@@ -32,21 +32,19 @@ class DeDuplicator {
     }
 
     _findBestMatch(key, duplicates, resolvedResource) {
-        for (const prefix of duplicates) {
-            if (resolvedResource.includes(prefix)) {
+        for (const duplicate of duplicates) {
+            if (resolvedResource.includes(duplicate)) {
                 // If we have a lock file. Always use the entry saved previously to achieve the long term caching.
                 if (key in this.existingLock) {
-                    this.newLock[key] = duplicates.find((prefix) =>
-                        prefix.includes(this.existingLock[key])
+                    this.newLock[key] = duplicates.find((duplicate) =>
+                        duplicate.includes(this.existingLock[key])
                     );
                 }
 
-                // Don't replace on the first encounter but assign the found prefix to the group.
-                // Next time if we found a prefix match we use the assigned result from previous iterations.
                 if (key in this.newLock) {
-                    return [prefix, this.newLock[key]];
+                    return [duplicate, this.newLock[key]];
                 } else {
-                    this.newLock[key] = prefix;
+                    this.newLock[key] = duplicate;
                     return null;
                 }
             }
