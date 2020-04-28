@@ -45,7 +45,7 @@ const findBestMatch = (key, prefixGroup, previousLock, currentLock, resolvedReso
     return null;
 };
 
-const deduplicate = (result, prefixGroups, previousLock, currentLock) => {
+const deduplicate = (result, duplicateEntries, previousLock, currentLock) => {
     if (!result) return undefined;
 
     // dont touch loaders
@@ -64,7 +64,7 @@ const deduplicate = (result, prefixGroups, previousLock, currentLock) => {
     }
 
     // we will change result as a side-effect
-    const wasChanged = prefixGroups.some(([key, prefixGroup]) => {
+    const wasChanged = duplicateEntries.some(([key, prefixGroup]) => {
         const found = findBestMatch(key, prefixGroup, previousLock, currentLock, resolvedResource);
 
         if (!found) {
@@ -122,13 +122,13 @@ class WebpackDeduplicationPlugin {
             rootPath,
         });
 
-        const prefixGroups = Object.entries(duplicates);
+        const duplicateEntries = Object.entries(duplicates);
         const previousLock = getDedupLock(this.rootPath);
         const currentLock = {};
 
         compiler.hooks.normalModuleFactory.tap(PLUGIN_NAME, (nmf) => {
             nmf.hooks.beforeResolve.tap(PLUGIN_NAME, (result) => {
-                return deduplicate(result, prefixGroups, previousLock, currentLock);
+                return deduplicate(result, duplicateEntries, previousLock, currentLock);
             });
         });
 
