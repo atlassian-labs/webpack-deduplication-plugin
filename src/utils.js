@@ -10,6 +10,7 @@ const transform = require('lodash/transform');
 const mkdirp = require('mkdirp');
 
 const patchesPath = 'patches';
+const EMPTY_DEDUP_LOCK = { yarnLockHash: '', lock: {} };
 
 const extractPackageName = (name, scope) => {
     const patchName = scope ? `${scope}+${name}` : name;
@@ -134,23 +135,44 @@ const getDuplicatedPackages = (options = {}) => {
 
 const getDedupLock = (lockFilePath) => {
     if (!fs.existsSync(lockFilePath)) {
-        return {};
+        return EMPTY_DEDUP_LOCK;
     }
     try {
-        return JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
+        const lockJson = JSON.parse(fs.readFileSync(lockFilePath, 'utf8'));
+        let yarnLockHash;
+        let lock;
+        if (lockJson.version === 2) {
+            yarnLockHash = lockJson.yarnLockHash;
+            lock = lockJson.resolve;
+        } else {
+            // Handle previous version of lock format
+            yarnLockHash = '';
+            lock = lockJson;
+        }
+        return { yarnLockHash, lock };
     } catch (e) {
-        return {};
+        return EMPTY_DEDUP_LOCK;
     }
 };
 
-const writeDedupLock = (lockFilePath, root, lock) => {
-    const relativeLock = Object.entries(lock)
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .reduce((lock, [key, value]) => {
-            lock[key] = value.replace(root, '');
-            return lock;
-        }, {});
-    fs.writeFileSync(lockFilePath, JSON.stringify(relativeLock, null, 2), 'utf8');
+const writeDedupLock = ({ previousYarnLockHash, lockFilePath, root, lock }) => {
+    const yarnLock = fs.readFileSync(path.resolve(root, 'yarn.lock'));
+    const currentYarnLockHash = crypto.createHash('md5').update(yarnLock).digest('hex');
+
+    if (previousYarnLockHash !== currentYarnLockHash) {
+        const relativeLock = Object.entries(lock)
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .reduce((lock, [key, value]) => {
+                lock[key] = value.replace(root, '');
+                return lock;
+            }, {});
+        const lockFileContent = {
+            version: 2,
+            yarnLockHash: currentYarnLockHash,
+            resolve: relativeLock,
+        };
+        fs.writeFileSync(lockFilePath, JSON.stringify(lockFileContent, null, 2), 'utf8');
+    }
 };
 
 module.exports = {

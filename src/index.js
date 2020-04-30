@@ -136,9 +136,10 @@ class WebpackDeduplicationPlugin {
             rootPath,
         });
 
+        const { yarnLockHash, lock } = getDedupLock(this.lockFilePath);
         const deDuplicator = new DeDuplicator({
             duplicates,
-            existingLock: getDedupLock(this.lockFilePath),
+            existingLock: lock,
         });
 
         compiler.hooks.normalModuleFactory.tap(PLUGIN_NAME, (nmf) => {
@@ -148,7 +149,12 @@ class WebpackDeduplicationPlugin {
         });
 
         compiler.hooks.emit.tap(PLUGIN_NAME, () => {
-            writeDedupLock(this.lockFilePath, this.rootPath, deDuplicator.getLock());
+            writeDedupLock({
+                previousYarnLockHash: yarnLockHash,
+                lockFilePath: this.lockFilePath,
+                root: this.rootPath,
+                lock: deDuplicator.getLock(),
+            });
         });
     }
 }
