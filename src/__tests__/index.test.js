@@ -108,7 +108,7 @@ describe('duplicate-transitive-replacement', () => {
 
         const res = deduplicate(matchingResource, duplicates);
 
-        expect(res).toBeFalsy()
+        expect(res).toBeFalsy();
     });
 
     it('duplicate transitive dependencies replacement - non-matching duplicates should return undefined', () => {
