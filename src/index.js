@@ -76,7 +76,7 @@ const containsNodeModules = (resolvedResource) => {
 };
 
 const findDuplicate = (res) => (t) => {
-    return res.includes(t);
+    return res.includes(t + '/');
 };
 
 const findBestMatch = (arr, matcher) => {

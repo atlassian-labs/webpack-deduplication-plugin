@@ -69,6 +69,48 @@ describe('duplicate-transitive-replacement', () => {
         );
     });
 
+    it('should not mistakenly replace prefix string', () => {
+        mockFs({
+            [path.resolve(
+                'node_modules/@atlaskit/foo/node_modules/@atlaskit/bar',
+                './something'
+            )]: 'stuff',
+            [path.resolve(
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/bar',
+                './something'
+            )]: 'stuff',
+            [path.resolve(
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/barrr',
+                './something-else'
+            )]: 'other stuff',
+        });
+        const duplicates = [
+            [
+                'node_modules/@atlaskit/foo/node_modules/@atlaskit/bar',
+                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/bar',
+            ],
+        ];
+
+        const matchingResource = mockResource({
+            filename: './something-else',
+            context: path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/barrr'),
+        });
+
+        silent.mockImplementation(() =>
+            path.resolve(matchingResource.context, matchingResource.request)
+        );
+
+        const finder = require('find-package-json');
+
+        finder.mockImplementation(() => ({
+            next: () => ({ value: { name: '@atlaskit/zoo' } }),
+        }));
+
+        const res = deduplicate(matchingResource, duplicates);
+
+        expect(res).toBeFalsy()
+    });
+
     it('duplicate transitive dependencies replacement - non-matching duplicates should return undefined', () => {
         mockFs({
             [path.resolve(
