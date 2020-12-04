@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const browserResolve = require('browser-resolve');
 const packageJsonFinder = require('find-package-json');
 const memoize = require('lodash/memoize');
@@ -75,8 +76,10 @@ const containsNodeModules = (resolvedResource) => {
     return resolvedResource.includes('node_modules');
 };
 
-const findDuplicate = (res) => (t) => {
-    return res.includes(t + '/');
+const findDuplicate = (resolvedResource) => (duplicate) => {
+    // prevent partial name matches. I.e. don't match `/button` when resolving `/button-group`
+    const duplicateDir = `${duplicate}${path.sep}`;
+    return resolvedResource.includes(duplicateDir);
 };
 
 const findBestMatch = (arr, matcher) => {

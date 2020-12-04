@@ -69,31 +69,38 @@ describe('duplicate-transitive-replacement', () => {
         );
     });
 
-    it('should not mistakenly replace prefix string', () => {
+    it('should not deduplicate when package name is partial match', () => {
         mockFs({
             [path.resolve(
-                'node_modules/@atlaskit/foo/node_modules/@atlaskit/bar',
-                './something'
-            )]: 'stuff',
+                'node_modules/@org/component-a/node_modules/@org/radio-button',
+                './index.js'
+            )]: 'some radio button code',
+
             [path.resolve(
-                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/bar',
-                './something'
-            )]: 'stuff',
+                'node_modules/@org/component-b/node_modules/@org/radio-button',
+                './index.js'
+            )]: 'some radio button code',
+
             [path.resolve(
-                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/barrr',
-                './something-else'
-            )]: 'other stuff',
+                'node_modules/@org/component-b/node_modules/@org/radio-button-group',
+                './index.js'
+            )]: 'some radio button GROUP code',
         });
+
         const duplicates = [
+            // although duplicate packages are prefixed with 'radio-button', these should
+            // be ignored as they are not a full match on the 'radio-button-group'
             [
-                'node_modules/@atlaskit/foo/node_modules/@atlaskit/bar',
-                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/bar',
+                'node_modules/@org/component-a/node_modules/@org/radio-button',
+                'node_modules/@org/component-b/node_modules/@org/radio-button',
             ],
         ];
 
         const matchingResource = mockResource({
-            filename: './something-else',
-            context: path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/barrr'),
+            filename: './index.js',
+            context: path.resolve(
+                'node_modules/@org/component-b/node_modules/@org/radio-button-group'
+            ),
         });
 
         silent.mockImplementation(() =>
@@ -103,7 +110,7 @@ describe('duplicate-transitive-replacement', () => {
         const finder = require('find-package-json');
 
         finder.mockImplementation(() => ({
-            next: () => ({ value: { name: '@atlaskit/zoo' } }),
+            next: () => ({ value: { name: '@org/component-b' } }),
         }));
 
         const res = deduplicate(matchingResource, duplicates);
