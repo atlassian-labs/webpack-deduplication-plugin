@@ -1,6 +1,6 @@
 {
   "name": "webpack-deduplication-plugin",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Webpack plugin for deduplicating transitive dependencies",
   "keywords": [
     "Webpack",
@@ -28,7 +28,9 @@
     "lint": "eslint --ext .ts,.tsx,.js src/"
   },
   "jest": {
-    "roots": ["src"]
+    "roots": [
+      "src"
+    ]
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
