@@ -69,6 +69,55 @@ describe('duplicate-transitive-replacement', () => {
         );
     });
 
+    it('should not deduplicate when package name is partial match', () => {
+        mockFs({
+            [path.resolve(
+                'node_modules/@org/component-a/node_modules/@org/radio-button',
+                './index.js'
+            )]: 'some radio button code',
+
+            [path.resolve(
+                'node_modules/@org/component-b/node_modules/@org/radio-button',
+                './index.js'
+            )]: 'some radio button code',
+
+            [path.resolve(
+                'node_modules/@org/component-b/node_modules/@org/radio-button-group',
+                './index.js'
+            )]: 'some radio button GROUP code',
+        });
+
+        const duplicates = [
+            // although duplicate packages are prefixed with 'radio-button', these should
+            // be ignored as they are not a full match on the 'radio-button-group'
+            [
+                'node_modules/@org/component-a/node_modules/@org/radio-button',
+                'node_modules/@org/component-b/node_modules/@org/radio-button',
+            ],
+        ];
+
+        const matchingResource = mockResource({
+            filename: './index.js',
+            context: path.resolve(
+                'node_modules/@org/component-b/node_modules/@org/radio-button-group'
+            ),
+        });
+
+        silent.mockImplementation(() =>
+            path.resolve(matchingResource.context, matchingResource.request)
+        );
+
+        const finder = require('find-package-json');
+
+        finder.mockImplementation(() => ({
+            next: () => ({ value: { name: '@org/component-b' } }),
+        }));
+
+        const res = deduplicate(matchingResource, duplicates);
+
+        expect(res).toBeFalsy();
+    });
+
     it('duplicate transitive dependencies replacement - non-matching duplicates should return undefined', () => {
         mockFs({
             [path.resolve(
