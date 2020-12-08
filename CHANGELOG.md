@@ -8,3 +8,8 @@
 
   * Bug fix where dependency was being deduped with incorrect packages that partially
   matched in package name. E.g. button vs button-group.
+
+0.0.5 / 2020-12-08
+==================
+
+  * add .npmignore
