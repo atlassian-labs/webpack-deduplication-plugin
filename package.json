@@ -33,10 +33,10 @@
     ]
   },
   "dependencies": {
+    "alphanum-sort": "^1.0.2",
     "app-root-path": "^3.0.0",
     "browser-resolve": "^1.11.3",
     "fast-glob": "^3.2.2",
-    "find-package-json": "^1.2.0",
     "lodash": "^4.17.15",
     "mkdirp": "^1.0.3",
     "resolve-from": "^5.0.0"

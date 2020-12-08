@@ -1208,6 +1208,11 @@ ajv@^6.10.0, ajv@^6.10.2, ajv@^6.5.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
+alphanum-sort@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
+  integrity sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=
+
 ansi-escapes@^4.2.1:
   version "4.3.1"
   resolved "https://packages.atlassian.com/api/npm/npm-remote/ansi-escapes/-/ansi-escapes-4.3.1.tgz#a5c47cc43181f1f38ffd7076837700d395522a61"
@@ -2318,11 +2323,6 @@ fill-range@^7.0.1:
   integrity sha1-GRmmp8df44ssfHflGYU12prN2kA=
   dependencies:
     to-regex-range "^5.0.1"
-
-find-package-json@^1.2.0:
-  version "1.2.0"
-  resolved "https://packages.atlassian.com/api/npm/npm-remote/find-package-json/-/find-package-json-1.2.0.tgz#4057d1b943f82d8445fe52dc9cf456f6b8b58083"
-  integrity sha1-QFfRuUP4LYRF/lLcnPRW9ri1gIM=
 
 find-up@^2.0.0, find-up@^2.1.0:
   version "2.1.0"

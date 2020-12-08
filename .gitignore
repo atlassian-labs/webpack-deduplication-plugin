@@ -5,6 +5,7 @@ npm-debug.log*
 
 # Editors
 .idea
+.DS_Store
 .vscode
 .history
 *.iml

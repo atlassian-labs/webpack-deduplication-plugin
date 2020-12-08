@@ -16,10 +16,6 @@ const importOrder = {
 
 module.exports = {
     parser: 'babel-eslint',
-    env: {
-        browser: true,
-        es6: true,
-    },
     extends: [
         'eslint:recommended',
         'plugin:prettier/recommended',
@@ -37,6 +33,7 @@ module.exports = {
     },
     env: {
         node: true,
+        es6: true,
         'jest/globals': true,
     },
 };

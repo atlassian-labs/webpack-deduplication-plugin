@@ -63,7 +63,7 @@ const nodeModulesMock = {
                       "version": "0.1.0",
                     }`,
         },
-        'package-d': {
+        'package-d-duplicate': {
             'package.json': `{
                       "name": "package-d",
                       "version": "0.1.0",
@@ -72,7 +72,7 @@ const nodeModulesMock = {
                       }
                     }`,
         },
-        'package-d-duplicate': {
+        'package-d': {
             'package.json': `{
                       "name": "package-d",
                       "version": "0.1.0",

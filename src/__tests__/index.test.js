@@ -15,7 +15,7 @@ const mockResource = ({ filename, context }) => {
 jest.mock('resolve-from', () => ({
     silent: jest.fn(),
 }));
-jest.mock('find-package-json', () => jest.fn());
+jest.mock('../package-utils');
 
 describe('duplicate-transitive-replacement', () => {
     afterEach(() => mockFs.restore());
@@ -37,8 +37,8 @@ describe('duplicate-transitive-replacement', () => {
         });
         const duplicates = [
             [
-                'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo',
-                'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
+                path.resolve('node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo'),
+                path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
             ],
         ];
 
@@ -51,11 +51,9 @@ describe('duplicate-transitive-replacement', () => {
             path.resolve(matchingResource.context, matchingResource.request)
         );
 
-        const finder = require('find-package-json');
+        const { readPackageName } = require('../package-utils');
 
-        finder.mockImplementation(() => ({
-            next: () => ({ value: { name: '@atlaskit/foo' } }),
-        }));
+        readPackageName.mockImplementation(() => '@atlaskit/foo');
 
         const res = deduplicate(matchingResource, duplicates);
 
@@ -107,11 +105,9 @@ describe('duplicate-transitive-replacement', () => {
             path.resolve(matchingResource.context, matchingResource.request)
         );
 
-        const finder = require('find-package-json');
+        const { readPackageName } = require('../package-utils');
 
-        finder.mockImplementation(() => ({
-            next: () => ({ value: { name: '@org/component-b' } }),
-        }));
+        readPackageName.mockImplementation(() => '@org/component-b');
 
         const res = deduplicate(matchingResource, duplicates);
 
@@ -149,11 +145,9 @@ describe('duplicate-transitive-replacement', () => {
             path.resolve(nonMatchingResource.context, nonMatchingResource.request)
         );
 
-        const finder = require('find-package-json');
+        const { readPackageName } = require('../package-utils');
 
-        finder.mockImplementation(() => ({
-            next: () => ({ value: { name: '@atlaskit/foo' } }),
-        }));
+        readPackageName.mockImplementation(() => '@atlaskit/foo');
 
         const res = deduplicate(nonMatchingResource, duplicates);
 

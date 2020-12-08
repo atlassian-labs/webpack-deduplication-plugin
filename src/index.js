@@ -1,10 +1,11 @@
 const fs = require('fs');
-const path = require('path');
+const { sep } = require('path');
 const browserResolve = require('browser-resolve');
-const packageJsonFinder = require('find-package-json');
 const memoize = require('lodash/memoize');
 const resolveFrom = require('resolve-from');
 
+const { readPackageName } = require('./package-utils');
+const { buildSearchTrie, searchTrie } = require('./trie');
 const { getDuplicatedPackages } = require('./utils');
 
 const noop = () => {};
@@ -22,6 +23,12 @@ const memoizedIsFileSync = memoize(function (file) {
     }
     return stat.isFile() || stat.isFIFO();
 });
+
+const getPackageName = function (trie, location) {
+    const { path: packageLocation } = searchTrie(trie, location, sep);
+    // trie contains package.json locations. Just look for one
+    return readPackageName(packageLocation);
+};
 
 const resolved = memoize(
     (request, context) => {
@@ -76,17 +83,7 @@ const containsNodeModules = (resolvedResource) => {
     return resolvedResource.includes('node_modules');
 };
 
-const findDuplicate = (resolvedResource) => (duplicate) => {
-    // prevent partial name matches. I.e. don't match `/button` when resolving `/button-group`
-    const duplicateDir = `${duplicate}${path.sep}`;
-    return resolvedResource.includes(duplicateDir);
-};
-
-const findBestMatch = (arr, matcher) => {
-    return arr.filter(matcher).sort((a, b) => b.length - a.length)[0];
-};
-
-const deduplicate = (result, dupVals) => {
+const deduplicateTrie = (result, trie) => {
     if (!result) return undefined;
 
     // dont touch loaders
@@ -104,44 +101,46 @@ const deduplicate = (result, dupVals) => {
         return undefined;
     }
 
-    // we will change result as a side-effect
-    const wasChanged = dupVals.some((onePackageDuplicates) => {
-        const found = findBestMatch(onePackageDuplicates, findDuplicate(resolvedResource));
+    const { value: replaceWithFirst, path: found } = searchTrie(trie, resolvedResource, sep);
 
-        if (!found) {
-            return false;
-        }
-
-        const replaceWithFirst = onePackageDuplicates[0];
-        const resolvedDup = resolvedResource.replace(found, replaceWithFirst);
-
-        const lastIndex = resolvedDup.indexOf(
-            'node_modules',
-            resolvedDup.indexOf(replaceWithFirst) + replaceWithFirst.length
-        );
-
-        if (lastIndex !== -1) {
-            return false;
-        }
-
-        const resolvedBase = packageJsonFinder(resolvedDup).next().value.name;
-        const resolvedResourceBase = packageJsonFinder(resolvedResource).next().value.name;
-        if (resolvedBase !== resolvedResourceBase) {
-            return false;
-        }
-
-        // this is how it works with webpack
-        // eslint-disable-next-line no-param-reassign
-        result.request = resolvedDup;
-        return true;
-    });
-
-    if (wasChanged) {
-        // conflicting eslint rules
-        return result;
+    // found record in trie, and it's not already optimal
+    // however it's guaranteed to be "maximal"
+    if (!replaceWithFirst || found === replaceWithFirst) {
+        return undefined;
     }
 
-    return undefined;
+    // replacing path by alias
+    const resolvedDup = resolvedResource.replace(found, replaceWithFirst);
+
+    // checking that new path and the old path are pointing to the same package
+    // as long as entries in trie are derived from locations of `package.jsons`
+    // using the same trie to find the last entry
+
+    // TODO: this check might not be needed in optimistic mode. Not sure we need it at the build time
+    const resolvedBase = getPackageName(trie, resolvedDup);
+    const resolvedResourceBase = getPackageName(trie, resolvedResource);
+    if (resolvedBase !== resolvedResourceBase) {
+        return undefined;
+    }
+
+    // this is how it works with webpack
+    // eslint-disable-next-line no-param-reassign
+    result.request = resolvedDup;
+    return result;
+};
+
+/**
+ * creates a search trie in form of [path]->[shortest variant]
+ */
+const prepareDuplicationDictionary = (duplicates) => {
+    const load = [];
+    duplicates.forEach((candidates) => {
+        const bestChoice = candidates[0];
+        candidates.forEach((packagePath) => {
+            load.push([packagePath, bestChoice]);
+        });
+    });
+    return buildSearchTrie(load, sep);
 };
 
 class WebpackDeduplicationPlugin {
@@ -157,14 +156,18 @@ class WebpackDeduplicationPlugin {
             rootPath,
         });
 
-        const dupVals = Object.values(duplicates);
+        const trie = prepareDuplicationDictionary(Object.values(duplicates));
 
         compiler.hooks.normalModuleFactory.tap('WebpackDeduplicationPlugin', (nmf) => {
             nmf.hooks.beforeResolve.tap('WebpackDeduplicationPlugin', (result) => {
-                return deduplicate(result, dupVals);
+                return deduplicateTrie(result, trie);
             });
         });
     }
+}
+
+function deduplicate(result, values) {
+    return deduplicateTrie(result, prepareDuplicationDictionary(values));
 }
 
 module.exports = {
