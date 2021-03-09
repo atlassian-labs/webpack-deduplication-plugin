@@ -100,7 +100,7 @@ describe('deduplicate transitive dependenices plugin', () => {
 
     it('should find duplicated packages', () => {
         const duplicates = getDuplicatedPackages();
-
+        mockFs.restore();
         expect(duplicates).toEqual({
             'package-a@0.1.0': [
                 `${nodeModulesPrefix}/package-a`,
@@ -177,7 +177,7 @@ describe('deduplicate transitive dependenices plugin', () => {
             },
         });
         const duplicates = getDuplicatedPackages();
-
+        mockFs.restore();
         expect(duplicates).toEqual({
             'package-d@0.1.0': [
                 `${nodeModulesPrefix}/package-d`,

@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "app-root-path": "^3.0.0",
-    "browser-resolve": "^1.11.3",
+    "enhanced-resolve": "^5.7.0",
     "fast-glob": "^3.2.2",
     "find-package-json": "^1.2.0",
     "lodash": "^4.17.15",
