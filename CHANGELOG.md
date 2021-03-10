@@ -13,3 +13,18 @@
 ==================
 
   * add .npmignore
+
+0.0.6 / 2021-03-10
+==================
+
+  * Broken version! Please use v0.0.7
+
+  0.0.7 / 2021-03-10
+==================
+
+  * Updated to use enhanced-resolver (same as webpack)
+
+  0.0.8 / 2021-03-10
+==================
+
+  * No change, update of CHANGELOG only
