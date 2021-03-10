@@ -1,7 +1,6 @@
 const fs = require('fs');
 const { ResolverFactory, CachedInputFileSystem } = require('enhanced-resolve');
 const memoize = require('lodash/memoize');
-const resolveFrom = require('resolve-from');
 
 const noop = () => {};
 
@@ -43,9 +42,9 @@ const createMemoisedResolver = (mainFields) => {
 
                 resolved = resolver.resolveSync({}, context, request);
             } catch (e) {
-                // Where a resolution fails (e.g. trying to resolve a built-in) we fallback to
-                // a simple resolution and assume something downstream takes care of these
-                resolved = resolveFrom.silent(context, request);
+                // Where a resolution fails (e.g. trying to resolve a built-in) we just
+                // return the original request, this allows it to be handled properly downstream
+                resolved = request;
             } finally {
                 Error.captureStackTrace = originalCaptureStackTrace;
                 Error.stackTraceLimit = originalStackLimit;
