@@ -25,7 +25,8 @@
     "build": "rm -rf build && npm run build:types && npm run build:js",
     "build:types": "tsc --project tsconfig.build.json --emitDeclarationOnly",
     "build:js": "babel src --out-dir build --extensions \".ts,.tsx,.js\" --ignore src/__tests__ --source-maps inline",
-    "lint": "eslint --ext .ts,.tsx,.js src/"
+    "lint": "eslint --ext .ts,.tsx,.js src/",
+    "prepare": "npm run build"
   },
   "jest": {
     "roots": [
