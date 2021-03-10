@@ -1,6 +1,5 @@
 const path = require('path');
 const mockFs = require('mock-fs');
-const { silent } = require('resolve-from');
 const { deduplicate } = require('../index');
 
 jest.mock('../utils');
@@ -12,9 +11,6 @@ const mockResource = ({ filename, context }) => {
     };
 };
 
-jest.mock('resolve-from', () => ({
-    silent: jest.fn(),
-}));
 jest.mock('find-package-json', () => jest.fn());
 
 describe('duplicate-transitive-replacement', () => {
@@ -47,19 +43,17 @@ describe('duplicate-transitive-replacement', () => {
             context: path.resolve('node_modules/@atlaskit/bar/node_modules/@atlaskit/foo'),
         });
 
-        silent.mockImplementation(() =>
-            path.resolve(matchingResource.context, matchingResource.request)
-        );
-
         const finder = require('find-package-json');
 
         finder.mockImplementation(() => ({
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const res = deduplicate(matchingResource, duplicates);
+        const resolver = () => path.resolve(matchingResource.context, matchingResource.request);
 
-        expect(res).toEqual(
+        deduplicate(matchingResource, duplicates, resolver);
+
+        expect(matchingResource).toEqual(
             mockResource({
                 filename: path.resolve(
                     'node_modules/@atlaskit/zoo/node_modules/@atlaskit/foo/something'
@@ -103,9 +97,7 @@ describe('duplicate-transitive-replacement', () => {
             ),
         });
 
-        silent.mockImplementation(() =>
-            path.resolve(matchingResource.context, matchingResource.request)
-        );
+        const resolver = () => path.resolve(matchingResource.context, matchingResource.request);
 
         const finder = require('find-package-json');
 
@@ -113,12 +105,12 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@org/component-b' } }),
         }));
 
-        const res = deduplicate(matchingResource, duplicates);
+        deduplicate(matchingResource, duplicates, resolver);
 
-        expect(res).toBeFalsy();
+        expect(matchingResource.context).not.toContain(/radio-button$/);
     });
 
-    it('duplicate transitive dependencies replacement - non-matching duplicates should return undefined', () => {
+    it('duplicate transitive dependencies replacement - non-matching duplicates should not modify result', () => {
         mockFs({
             [path.resolve(
                 'node_modules/@atlaskit/bar/node_modules/@atlaskit/foo',
@@ -145,9 +137,8 @@ describe('duplicate-transitive-replacement', () => {
             context: path.resolve('node_modules/@atlaskit/auh/node_modules/@atlaskit/foo'),
         });
 
-        silent.mockImplementation(() =>
-            path.resolve(nonMatchingResource.context, nonMatchingResource.request)
-        );
+        const resolver = () =>
+            path.resolve(nonMatchingResource.context, nonMatchingResource.request);
 
         const finder = require('find-package-json');
 
@@ -155,8 +146,8 @@ describe('duplicate-transitive-replacement', () => {
             next: () => ({ value: { name: '@atlaskit/foo' } }),
         }));
 
-        const res = deduplicate(nonMatchingResource, duplicates);
-
-        expect(res).toEqual(undefined);
+        const input = { ...nonMatchingResource };
+        deduplicate(input, duplicates, resolver);
+        expect(nonMatchingResource).toEqual(input);
     });
 });

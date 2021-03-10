@@ -84,7 +84,6 @@ const getDuplicatedPackages = (options = {}) => {
             return JSON.parse(fs.readFileSync(cacheFileName, 'utf8'));
         }
     }
-
     const packages = glob
         .sync(`${rootPath}/node_modules/**/package.json`)
         .sort()
