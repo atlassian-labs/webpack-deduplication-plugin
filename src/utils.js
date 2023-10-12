@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const alphaSort = require('alphanum-sort');
 const appRoot = require('app-root-path');
 const glob = require('fast-glob');
 const flatten = require('lodash/flatten');
@@ -70,6 +71,12 @@ const getCacheKey = ({ patchedPackages, rootPath }) => {
 const filterOnlyDuplicates = (pkg) =>
     pkg.split(path.sep).filter((p) => p === 'node_modules').length > 1;
 
+const resortNames = (duplicates) =>
+    alphaSort(Object.keys(duplicates)).reduce((acc, item) => {
+        acc[item] = duplicates[item].sort((a, b) => a.length - b.length);
+        return acc;
+    }, {});
+
 const CACHE_BUST = 1;
 
 const getDuplicatedPackages = (options = {}) => {
@@ -115,13 +122,15 @@ const getDuplicatedPackages = (options = {}) => {
         return value.length > 1 && !patchedPackages.includes(key);
     });
 
-    const cleanFromFalsePositives = transform(
-        onlyDuplicates,
-        (result, value, key) => {
-            // eslint-disable-next-line no-param-reassign
-            result[key] = extractProperDuplicates(value).sort();
-        },
-        {}
+    const cleanFromFalsePositives = resortNames(
+        transform(
+            onlyDuplicates,
+            (result, value, key) => {
+                // eslint-disable-next-line no-param-reassign
+                result[key] = extractProperDuplicates(value).sort();
+            },
+            {}
+        )
     );
 
     if (cacheFileName) {
